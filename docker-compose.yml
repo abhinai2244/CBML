@@ -1,0 +1,117 @@
+services:
+  # gluetun:
+  #   image: qmcgaw/gluetun:latest
+  #   container_name: gluetun
+  #   cap_add:
+  #     - NET_ADMIN
+  #   devices:
+  #     - /dev/net/tun:/dev/net/tun
+  #   environment:
+  #     - VPN_SERVICE_PROVIDER=
+  #     - VPN_TYPE=
+  #     # OpenVPN
+  #     - OPENVPN_USER=
+  #     - OPENVPN_PASSWORD=
+  #     # Wireguard
+  #     - WIREGUARD_PRIVATE_KEY=
+  #     - WIREGUARD_ADDRESS=
+  #     - WIREGUARD_PUBLIC_KEY=
+  #     - TZ=Asia/Kolkata
+  #     - UPDATER_PERIOD=24h
+  #   ports:
+  #     - "8080:8080"
+  #     - "8081:8081"
+  #   restart: on-failure
+
+  app:
+    build: .
+    command: bash start.sh
+    restart: unless-stopped
+    volumes:
+      - ./config.py:/usr/src/app/config.py:ro
+      - ./accounts:/usr/src/app/accounts
+      - ./downloads:/usr/src/app/downloads
+      - tunnel_data:/data:ro
+
+    expose:
+      - "8080"
+
+  tunnel:
+    build:
+      context: .
+      dockerfile: tunnel.Dockerfile
+    restart: unless-stopped
+    network_mode: "service:app"
+    volumes:
+      - tunnel_data:/data
+
+  # --- Second instance example (uncomment to run) ---
+  # app2:
+  #   build: .
+  #   command: bash start.sh
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./config2.py:/usr/src/app/config.py:ro
+  #     - ./app2.accounts:/usr/src/app/accounts
+  #     - ./app2.downloads:/usr/src/app/downloads
+  #     - tunnel_data:/data:ro
+  #   environment:
+  #     - TUNNEL_URL_FILE=/data/tunnel2_url.txt
+  #   expose:
+  #     - "8080"
+  # 
+  # tunnel2:
+  #   build:
+  #     context: .
+  #     dockerfile: tunnel.Dockerfile
+  #   restart: unless-stopped
+  #   network_mode: "service:app2"
+  #   environment:
+  #     - TUNNEL_URL_FILE=/data/tunnel2_url.txt
+  #   volumes:
+  #     - tunnel_data:/data
+  # 
+  # --- Optional: VPN for app2 via gluetun (uncomment and fill below) ---
+  # gluetun:
+  #   image: qmcgaw/gluetun:latest
+  #   container_name: gluetun
+  #   cap_add:
+  #     - NET_ADMIN
+  #   devices:
+  #     - /dev/net/tun:/dev/net/tun
+  #   environment:
+  #     - VPN_SERVICE_PROVIDER=
+  #     - VPN_TYPE=
+  #     # OpenVPN
+  #     - OPENVPN_USER=
+  #     - OPENVPN_PASSWORD=
+  #     # Wireguard
+  #     - WIREGUARD_PRIVATE_KEY=
+  #     - WIREGUARD_ADDRESS=
+  #     - WIREGUARD_PUBLIC_KEY=
+  #     - TZ=Asia/Kolkata
+  #     - UPDATER_PERIOD=24h
+  #   ports:
+  #     - "8080:8080"
+  #     - "8081:8081"
+  #   restart: on-failure
+
+  # Named tunnel (persistent URL with your own domain)
+  # 1. Go to https://dash.cloudflare.com/ → Networking → Tunnels → Create a tunnel
+  # 2. Choose "Cloudflared" connector type → name your tunnel → Save
+  # 3. Under "Connectors", copy the token from the install command (the eyJ... string)
+  # 4. Under "Public Hostname", add: subdomain.yourdomain.com → HTTP → localhost:8080
+  # 5. Paste the token below and uncomment the tunnel block for your app
+  # tunnel:
+  #   image: cloudflare/cloudflared:latest
+  #   restart: unless-stopped
+  #   command: tunnel --no-autoupdate run --token <YOUR_TOKEN>
+  #   network_mode: "service:app"
+  # tunnel2:
+  #   image: cloudflare/cloudflared:latest
+  #   restart: unless-stopped
+  #   command: tunnel --no-autoupdate run --token <YOUR_TOKEN_2>
+  #   network_mode: "service:app2"
+
+volumes:
+  tunnel_data:

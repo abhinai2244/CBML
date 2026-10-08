@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#00000C" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#00000C" media="(prefers-color-scheme: dark)">
+    <title>Torrent File Selector — HTR-X</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22.5' fill='%23F5F7FF'/%3E%3Cpath d='M 19.4 42.6 C 20.0 55.4 22.4 66.4 29.8 68.3 C 37.0 70.1 43.2 61.0 45.2 48.8 C 47.5 61.0 53.4 66.6 61.0 68.3 C 68.6 70.0 75.6 55.5 80.6 35.3' fill='none' stroke='%233D87FF' stroke-width='11.1' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #00000C;
+            --surface: #010116;
+            --surface-2: #02021F;
+            --line: #16409E;
+            --line-2: #2A5FD0;
+            --text: #F5F7FF;
+            --muted: #CBD2E5;
+            --accent: #3D87FF;
+            --accent-2: #5B9DFF;
+            --accent-soft: #071D5C;
+            --ok: #16A34A;
+            --shadow: 0 1px 2px rgba(0, 0, 12, 0.6), 0 8px 24px -12px rgba(61, 135, 255, 0.18);
+            --radius: 14px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #00000C;
+                --surface: #010116;
+                --surface-2: #02021F;
+                --line: #16409E;
+                --line-2: #2A5FD0;
+                --text: #F5F7FF;
+                --muted: #CBD2E5;
+                --accent: #3D87FF;
+                --accent-2: #5B9DFF;
+                --accent-soft: #071D5C;
+                --ok: #16A34A;
+                --shadow: 0 1px 2px rgba(0, 0, 12, 0.6), 0 8px 24px -12px rgba(61, 135, 255, 0.18);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            list-style: none;
+            text-decoration: none;
+        }
+
+        html {
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 15px;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            padding-bottom: 6rem;
+        }
+
+        .wrap {
+            width: 100%;
+            max-width: 62rem;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .appbar {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            background: color-mix(in srgb, var(--surface) 86%, transparent);
+            backdrop-filter: saturate(180%) blur(12px);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .appbar .wrap {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            height: 3.75rem;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            min-width: 0;
+            margin-right: auto;
+        }
+
+        .brand .logo {
+            width: 1.9rem;
+            height: 1.9rem;
+            flex-shrink: 0;
+            border-radius: 8px;
+        }
+
+        .name {
+            font-size: 0.98rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+        }
+
+        .name a {
+            color: var(--text);
+        }
+
+        .name a:hover {
+            color: var(--accent);
+        }
+
+        .social {
+            display: flex;
+            gap: 0.15rem;
+        }
+
+        .social a {
+            display: grid;
+            place-items: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 8px;
+            color: var(--muted);
+            transition: color 150ms ease, background 150ms ease;
+        }
+
+        .social a svg {
+            width: 1.05rem;
+            height: 1.05rem;
+        }
+
+        .social a:hover {
+            color: var(--text);
+            background: var(--surface-2);
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        button {
+            font-family: inherit;
+            font-size: 0.86rem;
+            font-weight: 500;
+            color: var(--text);
+            background: var(--surface);
+            border: 1px solid var(--line-2);
+            border-radius: 9px;
+            padding: 0.45rem 0.85rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+        }
+
+        button:hover {
+            background: var(--surface-2);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        button:focus-visible,
+        input:focus-visible,
+        a:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #00000C;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-2);
+            border-color: var(--accent-2);
+            color: #00000C;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="search"] {
+            font-family: inherit;
+            font-size: 0.9rem;
+            color: var(--text);
+            background: var(--surface);
+            border: 1px solid var(--line-2);
+            border-radius: 9px;
+            padding: 0.5rem 0.75rem;
+            outline: none;
+            transition: border-color 150ms ease, box-shadow 150ms ease;
+        }
+
+        input::placeholder {
+            color: var(--muted);
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        input[type="search"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--line-2);
+        }
+
+        input[type="checkbox"] {
+            width: 1rem;
+            height: 1rem;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .pin-entry {
+            animation: fade 0.35s ease both;
+        }
+
+        .pin-entry.fadeOut {
+            animation: fade 0.35s ease reverse both;
+        }
+
+        @keyframes fade {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        .pin-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.6rem;
+            max-width: 24rem;
+            margin: 4rem auto 0;
+            padding: 2.25rem 1.75rem;
+            text-align: center;
+        }
+
+        .pin-badge {
+            display: grid;
+            place-items: center;
+            width: 2.75rem;
+            height: 2.75rem;
+            border-radius: 12px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            margin-bottom: 0.35rem;
+        }
+
+        .pin-badge svg {
+            width: 1.3rem;
+            height: 1.3rem;
+        }
+
+        .pin-form label {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+        }
+
+        .pin-form .hint {
+            color: var(--muted);
+            font-size: 0.86rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .pin-digits {
+            display: flex;
+            gap: 0.6rem;
+            margin: 0.35rem 0 0.15rem;
+        }
+
+        .pin-digit {
+            width: 3.1rem;
+            height: 3.6rem;
+            text-align: center;
+            font-family: inherit;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text);
+            background: var(--surface);
+            border: 1px solid var(--line-2);
+            border-radius: 12px;
+            outline: none;
+            caret-color: var(--accent);
+            transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+        }
+
+        .pin-digit:hover {
+            border-color: var(--accent);
+        }
+
+        .pin-digit:focus {
+            border-color: var(--accent);
+            background: var(--surface);
+            box-shadow: 0 0 0 3px var(--line-2);
+        }
+
+        .pin-digit:disabled {
+            opacity: 0.6;
+        }
+
+        .pin-form.invalid .pin-digit {
+            border-color: #e5484d;
+        }
+
+        .pin-error {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.84rem;
+            font-weight: 500;
+            color: #e5484d;
+            min-height: 1.25rem;
+        }
+
+        .pin-error svg {
+            width: 0.95rem;
+            height: 0.95rem;
+            flex-shrink: 0;
+        }
+
+        .pin-form.shake {
+            animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translateX(-2px); }
+            20%, 80% { transform: translateX(4px); }
+            30%, 50%, 70% { transform: translateX(-7px); }
+            40%, 60% { transform: translateX(7px); }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 0.9rem;
+            height: 0.9rem;
+            margin-right: 0.4rem;
+            vertical-align: -0.12rem;
+            border: 2px solid rgba(245, 247, 255, 0.35);
+            border-top-color: #F5F7FF;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .pin-form button {
+            width: 100%;
+            padding: 0.6rem;
+            font-size: 0.92rem;
+        }
+
+        #fileManager {
+            padding-top: 1.25rem;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            padding: 0.85rem 1rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .summary {
+            font-size: 0.88rem;
+            color: var(--muted);
+            margin-right: auto;
+        }
+
+        .summary b {
+            color: var(--text);
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .selection-actions {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1 1 12rem;
+            min-width: 10rem;
+        }
+
+        .search-box > svg {
+            position: absolute;
+            left: 0.65rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0.95rem;
+            height: 0.95rem;
+            color: var(--muted);
+            pointer-events: none;
+        }
+
+        #fileSearch {
+            width: 100%;
+            padding-left: 2.1rem;
+        }
+
+        .listbar {
+            position: sticky;
+            top: 3.75rem;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 0.9rem;
+            border-bottom: 1px solid var(--line);
+            background: var(--surface-2);
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+
+        .crumbs {
+            display: flex;
+            align-items: center;
+            gap: 0.15rem;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-right: auto;
+            min-width: 0;
+        }
+
+        .crumbs button {
+            background: none;
+            border: none;
+            padding: 0.2rem 0.4rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--accent);
+            border-radius: 6px;
+        }
+
+        .crumbs button:hover {
+            background: var(--accent-soft);
+        }
+
+        .crumbs .sep {
+            color: var(--line-2);
+        }
+
+        .crumbs .current {
+            padding: 0.2rem 0.4rem;
+            font-weight: 600;
+            color: var(--text);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 18rem;
+        }
+
+        .sort-bar {
+            display: flex;
+            gap: 0.35rem;
+            flex-shrink: 0;
+        }
+
+        .sort-bar button {
+            padding: 0.3rem 0.6rem;
+            font-size: 0.8rem;
+        }
+
+        .sort-bar button.active {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-soft);
+        }
+
+        .file-tree {
+            border-radius: 0 0 var(--radius) var(--radius);
+            overflow: hidden;
+        }
+
+        .empty {
+            padding: 3rem 1rem;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .file-tree-item {
+            display: grid;
+            grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+            align-items: center;
+            gap: 0.7rem;
+            padding: 0.6rem 0.9rem;
+            border-bottom: 1px solid var(--line);
+            cursor: pointer;
+            transition: background 120ms ease;
+        }
+
+        .file-tree-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-tree-item:hover {
+            background: var(--surface-2);
+        }
+
+        .file-tree-item.is-selected {
+            background: color-mix(in srgb, var(--accent-soft) 60%, transparent);
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+        }
+
+        .file-tree-item .icon {
+            display: grid;
+            place-items: center;
+            width: 1.9rem;
+            height: 1.9rem;
+            border-radius: 8px;
+            background: var(--surface-2);
+            color: var(--muted);
+            flex-shrink: 0;
+        }
+
+        .file-tree-item.folder .icon {
+            background: var(--accent-soft);
+            color: var(--accent);
+        }
+
+        .file-tree-item .icon svg {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .file-info {
+            min-width: 0;
+        }
+
+        .file-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-tree-item.folder .file-name {
+            font-weight: 600;
+        }
+
+        .file-tree-item.folder .file-name:hover {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+
+        .size-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-top: 0.15rem;
+        }
+
+        .progress {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .progress .bar {
+            width: 4rem;
+            height: 4px;
+            border-radius: 999px;
+            background: var(--line);
+            overflow: hidden;
+        }
+
+        .progress .bar span {
+            display: block;
+            height: 100%;
+            border-radius: 999px;
+            background: var(--accent);
+        }
+
+        .progress.done {
+            color: var(--ok);
+        }
+
+        .edit-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            font: inherit;
+            font-size: 0.78rem;
+            color: var(--accent);
+            cursor: pointer;
+        }
+
+        .edit-btn:hover {
+            text-decoration: underline;
+        }
+
+        .meta-size {
+            display: none;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .file-size {
+            font-size: 0.82rem;
+            font-variant-numeric: tabular-nums;
+            color: var(--muted);
+            white-space: nowrap;
+            text-align: right;
+        }
+
+        .chevron {
+            display: grid;
+            place-items: center;
+            width: 1.1rem;
+            color: var(--line-2);
+        }
+
+        .chevron svg {
+            width: 0.9rem;
+            height: 0.9rem;
+        }
+
+        .file-tree-item,
+        .file-tree-item * {
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .actionbar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 30;
+            background: color-mix(in srgb, var(--surface) 90%, transparent);
+            backdrop-filter: saturate(180%) blur(12px);
+            border-top: 1px solid var(--line);
+        }
+
+        .actionbar .wrap {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+        }
+
+        .actionbar .note {
+            font-size: 0.84rem;
+            color: var(--muted);
+        }
+
+        #submitBtn {
+            padding: 0.55rem 1.4rem;
+            font-size: 0.9rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: rgba(0, 0, 12, 0.72);
+            backdrop-filter: blur(3px);
+            padding: 1rem;
+        }
+
+        .modal.open {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            width: 100%;
+            max-width: 26rem;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: 0 24px 60px -20px rgba(0, 0, 12, 0.75);
+            padding: 1.4rem;
+            animation: fade 0.2s ease both;
+        }
+
+        .modal h2 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal p {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+            margin-top: 1.1rem;
+        }
+
+        .edit-name-input {
+            width: 100%;
+            font-family: inherit;
+            font-size: 0.9rem;
+            color: var(--text);
+            background: var(--surface);
+            border: 1px solid var(--line-2);
+            border-radius: 9px;
+            padding: 0.55rem 0.7rem;
+        }
+
+        .edit-name-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--line-2);
+        }
+
+        @media (max-width: 640px) {
+            .toolbar {
+                gap: 0.6rem;
+            }
+
+            .summary {
+                flex: 1 1 100%;
+                margin-right: 0;
+            }
+
+            .search-box {
+                flex: 1 1 100%;
+            }
+
+            .file-tree-item {
+                gap: 0.55rem;
+                padding: 0.6rem 0.7rem;
+            }
+
+            .file-tree-item .icon {
+                display: none;
+            }
+
+            .file-size {
+                display: none;
+            }
+
+            .meta-size {
+                display: inline;
+                font-weight: 600;
+                color: var(--text);
+            }
+
+            .crumbs .current {
+                max-width: 9rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+        <symbol id="i-telegram" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M23.1 3.4a1.4 1.4 0 0 0-1.5-.2L1.6 11.5a1.4 1.4 0 0 0 .1 2.6l4.8 1.6 1.8 5.5a1.4 1.4 0 0 0 2.3.6l2.7-2.5 4.7 3.5a1.4 1.4 0 0 0 2.2-.8l3.4-16.2a1.4 1.4 0 0 0-.5-1.4ZM9.3 15.2l-.7 3.4-1.2-3.7 9-6.1-7.1 6.4Z"/>
+        </symbol>
+        <symbol id="i-github" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.9 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.2 4.5 18.2 4.8 18.2 4.8c.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3Z"/>
+        </symbol>
+        <symbol id="i-lock" viewBox="0 0 24 24">
+            <path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M7 10V7a5 5 0 0 1 10 0v3M6 10h12a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1Z"/>
+        </symbol>
+        <symbol id="i-search" viewBox="0 0 24 24">
+            <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm10 2-4.35-4.35"/>
+        </symbol>
+        <symbol id="i-folder" viewBox="0 0 24 24">
+            <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.6.8l.9 1.2H19a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>
+        </symbol>
+        <symbol id="i-file" viewBox="0 0 24 24">
+            <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Zm0 0v5h5"/>
+        </symbol>
+        <symbol id="i-chevron" viewBox="0 0 24 24">
+            <path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/>
+        </symbol>
+        <symbol id="i-alert" viewBox="0 0 24 24">
+            <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 8v5m0 3.5h.01M10.3 3.9 2.4 17.6A2 2 0 0 0 4.1 20.6h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/>
+        </symbol>
+        <symbol id="i-pencil" viewBox="0 0 24 24">
+            <path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/>
+        </symbol>
+    </svg>
+
+    <header class="appbar">
+        <div class="wrap">
+            <div class="brand">
+                <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="CANTARELLABOTS logo">
+                    <defs>
+                        <linearGradient id="wg" gradientUnits="userSpaceOnUse" x1="15" y1="70" x2="86" y2="30">
+                            <stop offset="0" stop-color="#16409E"/>
+                            <stop offset="0.5" stop-color="#2A5FD0"/>
+                            <stop offset="0.76" stop-color="#3D87FF"/>
+                            <stop offset="0.92" stop-color="#5B9DFF"/>
+                            <stop offset="1" stop-color="#CBD2E5"/>
+                        </linearGradient>
+                    </defs>
+                    <rect x="0" y="0" width="100" height="100" rx="22.5" ry="22.5" fill="#F5F7FF"/>
+                    <path d="M 19.4 42.6 C 20.0 55.4 22.4 66.4 29.8 68.3 C 37.0 70.1 43.2 61.0 45.2 48.8 C 47.5 61.0 53.4 66.6 61.0 68.3 C 68.6 70.0 75.6 55.5 80.6 35.3" fill="none" stroke="url(#wg)" stroke-width="11.1" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h1 class="name"><a href="https://t.me/WZMLX_Updates">CANTARELLABOTS Torrent Selector</a></h1>
+            </div>
+            <div class="social">
+                <a href="https://www.github.com/SilentDemonSD/WZML-X" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><svg aria-hidden="true"><use href="#i-github"/></svg></a>
+                <a href="https://t.me/WZMLX_Updates" target="_blank" rel="noopener noreferrer" aria-label="Telegram"><svg aria-hidden="true"><use href="#i-telegram"/></svg></a>
+            </div>
+        </div>
+    </header>
+
+    <main class="wrap">
+        <div id="pinEntry" class="pin-entry">
+            <form id="pinForm" class="pin-form card" onsubmit="return false">
+                <span class="pin-badge"><svg aria-hidden="true"><use href="#i-lock"/></svg></span>
+                <label for="pinDigit0">Enter your pin</label>
+                <p class="hint">Use the code you received on Telegram to open this torrent's file list.</p>
+                <div class="pin-digits" id="pinDigits">
+                    <input class="pin-digit" id="pinDigit0" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="1" aria-label="Pin digit 1">
+                    <input class="pin-digit" id="pinDigit1" type="text" inputmode="numeric" autocomplete="off" maxlength="1" aria-label="Pin digit 2">
+                    <input class="pin-digit" id="pinDigit2" type="text" inputmode="numeric" autocomplete="off" maxlength="1" aria-label="Pin digit 3">
+                    <input class="pin-digit" id="pinDigit3" type="text" inputmode="numeric" autocomplete="off" maxlength="1" aria-label="Pin digit 4">
+                </div>
+                <input type="hidden" id="pinInput">
+                <p class="pin-error" id="pinError" role="alert" hidden></p>
+                <button type="submit" id="submitPin" class="btn-primary">Unlock files</button>
+            </form>
+        </div>
+
+        <div id="fileManager" style="display: none;">
+            <div class="toolbar card">
+                <p class="summary">
+                    <b id="checked_files">0</b> of <b id="total_files">0</b> files
+                    &nbsp;·&nbsp; <b id="checked_size">0</b> of <b id="total_size">0</b>
+                </p>
+
+                <div class="selection-actions">
+                    <button type="button" id="selectAllBtn">This folder</button>
+                    <button type="button" id="selectEverythingBtn">All files</button>
+                    <button type="button" id="invertSelectionBtn">Invert</button>
+                </div>
+
+                <div class="search-box">
+                    <svg aria-hidden="true"><use href="#i-search"/></svg>
+                    <input type="search" id="fileSearch" placeholder="Search files...">
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="listbar">
+                    <nav class="crumbs" id="crumbs" aria-label="Folder path"></nav>
+                    <div class="sort-bar">
+                        <button type="button" id="sortNameBtn" onclick="setSort('name')">Name <span id="name-sort">↑</span></button>
+                        <button type="button" id="sortSizeBtn" onclick="setSort('size')">Size <span id="size-sort">↕</span></button>
+                    </div>
+                </div>
+                <div id="fileTree" class="file-tree"></div>
+            </div>
+        </div>
+    </main>
+
+    <div class="actionbar" id="actionbar" style="display: none;">
+        <div class="wrap">
+            <span class="note" id="actionNote">Nothing selected</span>
+            <button type="button" id="submitBtn" class="btn-primary">Submit selection</button>
+        </div>
+    </div>
+
+    <div id="reusableModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle"></h2>
+            <div id="modalBody"></div>
+            <div id="modalFooter" class="modal-footer"></div>
+        </div>
+    </div>
+    <script>
+        (function () {
+            "use strict";
+            var tg = window.Telegram && window.Telegram.WebApp;
+            if (!tg || !tg.initData && !tg.platform) return;
+            document.documentElement.classList.add("in-telegram");
+            try {
+                tg.ready();
+                tg.expand();
+                if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+                if (tg.setHeaderColor) tg.setHeaderColor("#00000C");
+                if (tg.setBackgroundColor) tg.setBackgroundColor("#00000C");
+            } catch (e) { }
+            window.wzCloseApp = function () {
+                try { tg.close(); } catch (e) { }
+            };
+        })();
+    </script>
+    <script>
+        const fileTree = document.getElementById('fileTree');
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const pinEntry = document.getElementById('pinEntry');
+        const pinInput = document.getElementById('pinInput');
+        const submitPin = document.getElementById('submitPin');
+        const fileManager = document.getElementById('fileManager');
+        const reusableModal = document.getElementById('reusableModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        const modalFooter = document.getElementById('modalFooter');
+        const checkedFilesEl = document.getElementById('checked_files');
+        const totalFilesEl = document.getElementById('total_files');
+        const checkedSizeEl = document.getElementById('checked_size');
+        const totalSizeEl = document.getElementById('total_size');
+
+        const urlParams = new Proxy(new URLSearchParams(window.location.search), {
+            get: (searchParams, prop) => searchParams.get(prop),
+        });
+        let currentFolder = null;
+        let files = [];
+        let allowEdit = false;
+
+        function formatSize(size) {
+            const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+            let i = 0;
+            while (size >= 1024 && i < units.length - 1) {
+                size /= 1024;
+                i++;
+            }
+            return `${size.toFixed(2)} ${units[i]}`;
+        }
+
+        function calculateFolderSize(folder) {
+            let totalSize = 0;
+            const queue = [folder];
+            while (queue.length > 0) {
+                const node = queue.pop();
+                if (node.type === 'file') {
+                    totalSize += node.size;
+                } else if (node.children) {
+                    queue.push(...node.children);
+                }
+            }
+            return totalSize;
+        }
+
+        let sortBy = "name";
+        let sortAsc = true;
+        let lastSelectedNode = null;
+
+
+        function filterFilesBySearch() {
+            const searchInput = document.getElementById('fileSearch');
+            if (!searchInput) return;
+            const query = searchInput.value.toLowerCase().trim();
+            let visible = 0;
+            document.querySelectorAll('#fileTree .file-tree-item').forEach(row => {
+                const name = row.querySelector('.file-name');
+                if (!name) return;
+                const hit = !query || name.textContent.toLowerCase().includes(query);
+                row.style.display = hit ? '' : 'none';
+                if (hit) visible += 1;
+            });
+            const empty = fileTree.querySelector('.empty');
+            if (empty) return;
+            let none = fileTree.querySelector('.no-match');
+            if (visible === 0) {
+                if (!none) {
+                    none = document.createElement('div');
+                    none.className = 'empty no-match';
+                    none.textContent = 'No files match your search.';
+                    fileTree.appendChild(none);
+                }
+            } else if (none) {
+                none.remove();
+            }
+        }
+
+
+        function setSort(type) {
+            if (sortBy === type) sortAsc = !sortAsc;
+            else { sortBy = type; sortAsc = type === "name"; }
+            document.getElementById("name-sort").textContent = sortBy === "name" ? (sortAsc ? "↑" : "↓") : "↕";
+            document.getElementById("size-sort").textContent = sortBy === "size" ? (sortAsc ? "↑" : "↓") : "↕";
+            document.getElementById("sortNameBtn").classList.toggle('active', sortBy === "name");
+            document.getElementById("sortSizeBtn").classList.toggle('active', sortBy === "size");
+            renderFileTree(currentFolder ? currentFolder.children : files);
+        }
+
+
+        function renderCrumbs() {
+            const box = document.getElementById('crumbs');
+            if (!box) return;
+            const chain = [];
+            let node = currentFolder;
+            while (node) {
+                chain.unshift(node);
+                node = findParent(node);
+            }
+            box.innerHTML = '';
+            const addBtn = (label, target) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = label;
+                btn.addEventListener('click', () => {
+                    currentFolder = target;
+                    renderCrumbs();
+                    renderFileTree(target ? target.children : files);
+                    updateStats();
+                });
+                box.appendChild(btn);
+            };
+            const addSep = () => {
+                const sep = document.createElement('span');
+                sep.className = 'sep';
+                sep.textContent = '/';
+                box.appendChild(sep);
+            };
+            if (chain.length === 0) {
+                const root = document.createElement('span');
+                root.className = 'current';
+                root.textContent = 'All files';
+                box.appendChild(root);
+                return;
+            }
+            addBtn('All files', null);
+            chain.forEach((folder, i) => {
+                addSep();
+                if (i === chain.length - 1) {
+                    const current = document.createElement('span');
+                    current.className = 'current';
+                    current.textContent = folder.name;
+                    current.title = folder.name;
+                    box.appendChild(current);
+                } else {
+                    addBtn(folder.name, folder);
+                }
+            });
+        }
+
+        function icon(id) {
+            const wrap = document.createElement('span');
+            wrap.className = 'icon';
+            wrap.innerHTML = `<svg aria-hidden="true"><use href="#${id}"/></svg>`;
+            return wrap;
+        }
+
+        function sortNodes(nodes) {
+            return [...nodes].sort((a, b) => {
+                const av = sortBy === "name" ? a.name.toLowerCase() : (a.type === "folder" ? calculateFolderSize(a) : a.size);
+                const bv = sortBy === "name" ? b.name.toLowerCase() : (b.type === "folder" ? calculateFolderSize(b) : b.size);
+                if (av < bv) return sortAsc ? -1 : 1;
+                if (av > bv) return sortAsc ? 1 : -1;
+                return 0;
+            });
+        }
+
+        function renderFileTree(nodes) {
+            fileTree.innerHTML = '';
+            if (!nodes || nodes.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'empty';
+                empty.textContent = 'This folder is empty.';
+                fileTree.appendChild(empty);
+                return;
+            }
+
+            sortNodes(nodes).forEach(node => {
+                const isFolder = node.type === 'folder';
+                const row = document.createElement('div');
+                row.className = isFolder ? 'file-tree-item folder' : 'file-tree-item';
+
+                const checkboxWrapper = document.createElement('div');
+                checkboxWrapper.className = 'checkbox-wrapper';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = node.id;
+                checkbox.checked = node.selected;
+                checkbox.setAttribute('aria-label', node.name);
+                checkbox.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    toggleFile(node, {
+                        shiftKey: event.shiftKey,
+                        ctrlKey: event.ctrlKey,
+                        metaKey: event.metaKey,
+                        checked: !node.selected
+                    });
+                });
+                checkboxWrapper.appendChild(checkbox);
+
+                const fileInfo = document.createElement('div');
+                fileInfo.className = 'file-info';
+
+                const nameElement = document.createElement('div');
+                nameElement.className = 'file-name';
+                nameElement.textContent = node.name;
+                nameElement.title = node.name;
+                if (isFolder) nameElement.classList.add('folder', 'folder-name');
+                fileInfo.appendChild(nameElement);
+
+                const size = isFolder ? calculateFolderSize(node) : node.size;
+                const meta = document.createElement('div');
+                meta.className = 'size-info';
+
+                const metaSize = document.createElement('span');
+                metaSize.className = 'meta-size';
+                metaSize.textContent = formatSize(size);
+                meta.appendChild(metaSize);
+
+                if (isFolder) {
+                    const count = document.createElement('span');
+                    const total = countFiles(node);
+                    count.textContent = `${total} file${total === 1 ? '' : 's'}`;
+                    meta.appendChild(count);
+                } else {
+                    if (node.progress !== undefined) {
+                        const pct = Math.min(100, Math.max(0, Math.round(node.progress)));
+                        const progress = document.createElement('span');
+                        progress.className = pct >= 100 ? 'progress done' : 'progress';
+                        if (pct >= 100) {
+                            progress.textContent = 'Complete';
+                        } else {
+                            progress.innerHTML = `<span class="bar"><span style="width:${pct}%"></span></span>${pct}%`;
+                        }
+                        meta.appendChild(progress);
+                    }
+                    if (allowEdit) {
+                        const editBtn = document.createElement('button');
+                        editBtn.type = 'button';
+                        editBtn.className = 'edit-btn';
+                        editBtn.textContent = 'Rename';
+                        editBtn.addEventListener('click', (event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            openEditFileNameModal(node);
+                        });
+                        meta.appendChild(editBtn);
+                    }
+                }
+                fileInfo.appendChild(meta);
+
+                const sizeCell = document.createElement('div');
+                sizeCell.className = 'file-size';
+                sizeCell.textContent = formatSize(size);
+
+                const chevron = document.createElement('span');
+                chevron.className = 'chevron';
+                if (isFolder) chevron.innerHTML = '<svg aria-hidden="true"><use href="#i-chevron"/></svg>';
+
+                row.appendChild(checkboxWrapper);
+                row.appendChild(icon(isFolder ? 'i-folder' : 'i-file'));
+                row.appendChild(fileInfo);
+                row.appendChild(sizeCell);
+                row.appendChild(chevron);
+
+                if (isFolder) {
+                    if (areAllChildrenSelected(node)) {
+                        checkbox.checked = true;
+                    } else if (areSomeChildrenSelected(node)) {
+                        checkbox.indeterminate = true;
+                    }
+                    nameElement.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        openFolder(node);
+                    });
+                    chevron.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        openFolder(node);
+                    });
+                }
+
+                row.classList.toggle('is-selected', isFolder ? areAllChildrenSelected(node) : !!node.selected);
+
+                row.addEventListener('pointerdown', (event) => {
+                    if (event.target.closest('input[type="checkbox"]') ||
+                        event.target.closest('.edit-btn') ||
+                        event.target.closest('.chevron') ||
+                        (isFolder && event.target.closest('.folder-name'))) {
+                        return;
+                    }
+                    event.preventDefault();
+                    event.stopPropagation();
+                    toggleFile(node, {
+                        shiftKey: event.shiftKey,
+                        ctrlKey: event.ctrlKey,
+                        metaKey: event.metaKey,
+                        checked: !node.selected
+                    });
+                });
+
+                fileTree.appendChild(row);
+            });
+
+            updateSelectAllButtonText();
+            updateSelectEverythingButtonText();
+            filterFilesBySearch();
+        }
+
+        function countFiles(node) {
+            let total = 0;
+            const queue = [node];
+            while (queue.length) {
+                const current = queue.pop();
+                if (current.type === 'file') total += 1;
+                else if (current.children) queue.push(...current.children);
+            }
+            return total;
+        }
+
+        function areAllChildrenSelected(folder) {
+            return folder.children.every(child => child.type === 'folder' ? areAllChildrenSelected(child) : child.selected);
+        }
+
+        function areSomeChildrenSelected(folder) {
+            return folder.children.some(child => child.type === 'folder' ? areSomeChildrenSelected(child) : child.selected);
+        }
+
+        function toggleFile(node, event = {}) {
+            const visibleNodes = [...(currentFolder ? currentFolder.children : files)].sort((a, b) => {
+                const av = sortBy === "name"
+                    ? a.name.toLowerCase()
+                    : (a.type === "folder" ? calculateFolderSize(a) : a.size);
+                const bv = sortBy === "name"
+                    ? b.name.toLowerCase()
+                    : (b.type === "folder" ? calculateFolderSize(b) : b.size);
+
+                if (av < bv) return sortAsc ? -1 : 1;
+                if (av > bv) return sortAsc ? 1 : -1;
+                return 0;
+            });
+
+            const shouldSelect = event.checked !== undefined ? event.checked : !node.selected;
+
+
+            if (event.shiftKey && lastSelectedNode) {
+                const start = visibleNodes.findIndex(
+                    n => n.id === lastSelectedNode.id
+                );
+                const end = visibleNodes.findIndex(
+                    n => n.id === node.id
+                );
+
+                if (start !== -1 && end !== -1) {
+                    const from = Math.min(start, end);
+                    const to = Math.max(start, end);
+
+                    for (let i = from; i <= to; i++) {
+                        const current = visibleNodes[i];
+
+                        if (current.type === 'folder') {
+                            toggleFolder(current, shouldSelect);
+                        } else {
+                            current.selected = shouldSelect;
+                        }
+
+                        updateParentFolders(current);
+                    }
+                } else {
+                    node.selected = shouldSelect;
+                    updateParentFolders(node);
+                }
+            } else {
+                if (node.type === 'folder') {
+                    toggleFolder(node, shouldSelect);
+                } else {
+                    node.selected = shouldSelect;
+                }
+
+                updateParentFolders(node);
+            }
+
+            lastSelectedNode = node;
+            updateStats();
+            renderFileTree(currentFolder ? currentFolder.children : files);
+            filterFilesBySearch();
+        }
+
+        function toggleFolder(folder, isSelected) {
+            folder.selected = isSelected;
+            const queue = [folder];
+            while (queue.length > 0) {
+                const node = queue.pop();
+                if (node.type === 'file') {
+                    node.selected = isSelected;
+                } else if (node.children) {
+                    node.selected = isSelected;
+                    queue.push(...node.children);
+                }
+            }
+        }
+
+        function updateParentFolders(node) {
+            let parent = findParent(node);
+            while (parent) {
+                parent.selected = areAllChildrenSelected(parent);
+                parent = findParent(parent);
+            }
+        }
+
+
+        const parentOf = new Map();
+
+        function buildParents(nodes, parent = null) {
+            nodes.forEach(node => {
+                parentOf.set(node, parent);
+                if (node.children) buildParents(node.children, node);
+            });
+        }
+
+        function findParent(node) {
+            return parentOf.get(node) || null;
+        }
+
+
+        function updateStats() {
+            const stats = calculateStats(files);
+            checkedFilesEl.textContent = stats.selectedCount;
+            totalFilesEl.textContent = stats.totalCount;
+            checkedSizeEl.textContent = formatSize(stats.selectedSize);
+            totalSizeEl.textContent = formatSize(stats.totalSize);
+            const note = document.getElementById('actionNote');
+            if (note) {
+                note.textContent = stats.selectedCount === 0
+                    ? 'Nothing selected'
+                    : `${stats.selectedCount} file${stats.selectedCount === 1 ? '' : 's'} · ${formatSize(stats.selectedSize)} selected`;
+            }
+            submitBtn.disabled = stats.selectedCount === 0;
+        }
+
+        function calculateStats(nodes) {
+            let selectedCount = 0;
+            let totalCount = 0;
+            let selectedSize = 0;
+            let totalSize = 0;
+
+            const queue = [...nodes];
+            while (queue.length > 0) {
+                const node = queue.pop();
+                if (node.type === 'file') {
+                    totalCount++;
+                    totalSize += node.size;
+                    if (node.selected) {
+                        selectedCount++;
+                        selectedSize += node.size;
+                    }
+                }
+                if (node.children) {
+                    queue.push(...node.children);
+                }
+            }
+
+            return { selectedCount, totalCount, selectedSize, totalSize };
+        }
+
+
+        function openFolder(folder) {
+            currentFolder = folder;
+            renderCrumbs();
+            renderFileTree(folder.children);
+            updateStats();
+        }
+
+
+        function goBack() {
+            if (!currentFolder) return;
+            currentFolder = findParent(currentFolder);
+            renderCrumbs();
+            renderFileTree(currentFolder ? currentFolder.children : files);
+            updateStats();
+        }
+
+        function selectAll() {
+            const nodes = currentFolder ? currentFolder.children : files;
+            const allSelected = nodes.every(node => node.type === 'folder' ? areAllChildrenSelected(node) : node.selected);
+            nodes.forEach(node => {
+                if (node.type === 'folder') {
+                    toggleFolder(node, !allSelected);
+                } else {
+                    node.selected = !allSelected;
+                }
+            });
+            updateStats();
+            renderFileTree(nodes);
+            updateSelectAllButtonText();
+        }
+
+        function invertSelection() {
+            const nodes = currentFolder ? currentFolder.children : files;
+            nodes.forEach(node => {
+                if (node.type === 'folder') {
+                    invertFolderSelection(node);
+                } else {
+                    node.selected = !node.selected;
+                }
+            });
+            updateStats();
+            renderFileTree(nodes);
+        }
+
+        function invertFolderSelection(folder) {
+            folder.selected = !folder.selected;
+            if (folder.children) {
+                folder.children.forEach(child => {
+                    if (child.type === 'folder') {
+                        invertFolderSelection(child);
+                    } else {
+                        child.selected = !child.selected;
+                    }
+                });
+            }
+        }
+
+        function selectEverything() {
+            const allSelected = files.every(node => node.type === 'folder' ? areAllChildrenSelected(node) : node.selected);
+            function recursiveSelect(nodes, select) {
+                nodes.forEach(node => {
+                    if (node.type === 'folder') {
+                        node.selected = select;
+                        if (node.children) {
+                            recursiveSelect(node.children, select);
+                        }
+                    } else {
+                        node.selected = select;
+                    }
+                });
+            }
+            recursiveSelect(files, !allSelected);
+            updateStats();
+            renderFileTree(currentFolder ? currentFolder.children : files);
+            updateSelectEverythingButtonText();
+        }
+
+
+        function getFullPath(node) {
+            const path = [];
+            let current = findParent(node);
+            while (current) {
+                path.unshift(current.name);
+                current = findParent(current);
+            }
+            return path.join('/');
+        }
+
+        function openEditFileNameModal(node) {
+            modalTitle.textContent = `Edit ${node.type === 'folder' ? 'Folder' : 'File'} Name`;
+            modalBody.innerHTML = '<input type="text" id="editNameInput" class="edit-name-input">';
+            modalFooter.innerHTML = '<button type="button" id="cancelNameBtn">Cancel</button><button type="button" id="saveNameBtn" class="btn-primary">Save</button>';
+
+            const saveNameBtn = document.getElementById('saveNameBtn');
+            const cancelNameBtn = document.getElementById('cancelNameBtn');
+            const editNameInput = document.getElementById('editNameInput');
+            editNameInput.value = node.name;
+
+            saveNameBtn.addEventListener('click', () => {
+                closeModal();
+                const newName = editNameInput.value.trim();
+                if (newName && newName !== node.name) {
+                    const fullPath = getFullPath(node);
+                    const requestUrl = `/app/files/torrent?gid=${urlParams.gid}&pin=${pinInput.value}&mode=rename`;
+                    const body = {
+                        old_path: fullPath ? `${fullPath}/${node.name}` : node.name,
+                        new_path: fullPath ? `${fullPath}/${newName}` : newName,
+                        type: node.type,
+                    };
+                    fetch(requestUrl, {
+                        'method': 'POST',
+                        'body': JSON.stringify(body),
+                    }).then(response => {
+                        if (response.ok) {
+                            modalTitle.textContent = 'Success!';
+                            modalBody.innerHTML = '<p>Your Rename has been submitted successfully.</p>';
+                            node.name = newName;
+                            renderFileTree(currentFolder ? currentFolder.children : files);
+                        } else {
+                            modalTitle.textContent = 'Error';
+                            modalBody.innerHTML = '<p>There was an error submitting your Rename. Try Again!.</p>';
+                        }
+                        modalFooter.innerHTML = '<button type="button" class="btn-primary" onclick="closeModal()">Okay</button>';
+                        openModal();
+                    });
+                }
+            });
+
+            cancelNameBtn.addEventListener('click', closeModal);
+
+            editNameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    saveNameBtn.click();
+                }
+            });
+
+            openModal();
+            editNameInput.setSelectionRange(editNameInput.value.length, editNameInput.value.length);
+            editNameInput.focus();
+        }
+
+
+        function openModal() {
+            reusableModal.classList.add('open');
+        }
+
+
+        function closeModal() {
+            reusableModal.classList.remove('open');
+        }
+
+        function submitData() {
+            if (parseInt(checkedFilesEl.innerText) === 0) {
+                modalTitle.textContent = 'Error';
+                modalBody.innerHTML = '<p>No files selected.</p>';
+                modalFooter.innerHTML = '<button type="button" class="btn-primary" onclick="closeModal()">Okay</button>';
+                openModal();
+                return;
+            }
+            modalTitle.textContent = 'Processing...';
+            modalBody.innerHTML = `<p>Submitting, ${checkedFilesEl.innerText} file(s)... </p>`;
+            modalFooter.innerHTML = '';
+            openModal();
+            const requestUrl = `/app/files/torrent?gid=${urlParams.gid}&pin=${pinInput.value}&mode=selection`;
+            fetch(requestUrl, { 'method': 'POST', 'body': JSON.stringify(files) }).then(response => {
+                if (reusableModal.style.display === 'block') {
+                    closeModal();
+                }
+                if (response.ok) {
+                    modalTitle.textContent = 'Success!';
+                    modalBody.innerHTML = '<p>Your selection has been submitted successfully.</p>';
+                } else {
+                    modalTitle.textContent = 'Error';
+                    modalBody.innerHTML = '<p>An error occurred while submitting your selection. Try Again!</p>';
+                }
+                modalFooter.innerHTML = '<button type="button" class="btn-primary" onclick="closeModal()">Okay</button>';
+                openModal();
+            });
+        }
+
+        const pinForm = document.getElementById('pinForm');
+        const pinError = document.getElementById('pinError');
+        const pinDigits = Array.from(document.querySelectorAll('.pin-digit'));
+
+        function syncPin() {
+            pinInput.value = pinDigits.map(d => d.value).join('');
+        }
+
+        function clearPinError() {
+            pinError.hidden = true;
+            pinError.textContent = '';
+            pinForm.classList.remove('invalid');
+        }
+
+        function showPinError(message) {
+            pinError.innerHTML = '<svg aria-hidden="true"><use href="#i-alert"/></svg>';
+            pinError.appendChild(document.createTextNode(message));
+            pinError.hidden = false;
+            pinForm.classList.add('invalid');
+            pinForm.classList.remove('shake');
+            void pinForm.offsetWidth;
+            pinForm.classList.add('shake');
+        }
+
+        function setPinBusy(busy) {
+            submitPin.disabled = busy;
+            submitPin.innerHTML = busy ? '<span class="spinner"></span>Checking...' : 'Unlock files';
+            pinDigits.forEach(d => { d.disabled = busy; });
+        }
+
+        function focusDigit(index) {
+            const target = pinDigits[Math.max(0, Math.min(pinDigits.length - 1, index))];
+            target.focus();
+            target.select();
+        }
+
+        function fillPin(value) {
+            const digits = String(value || '').replace(/\D/g, '').slice(0, pinDigits.length).split('');
+            pinDigits.forEach((d, i) => { d.value = digits[i] || ''; });
+            syncPin();
+            return digits.length;
+        }
+
+        function resetPin() {
+            fillPin('');
+            focusDigit(0);
+        }
+
+        pinDigits.forEach((digit, index) => {
+            digit.addEventListener('focus', () => digit.select());
+
+            digit.addEventListener('input', () => {
+                const cleaned = digit.value.replace(/\D/g, '');
+                digit.value = cleaned.slice(-1);
+                syncPin();
+                clearPinError();
+                if (digit.value && index < pinDigits.length - 1) {
+                    focusDigit(index + 1);
+                }
+                if (pinDigits.every(d => d.value)) {
+                    submitPin.click();
+                }
+            });
+
+            digit.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !digit.value && index > 0) {
+                    e.preventDefault();
+                    pinDigits[index - 1].value = '';
+                    syncPin();
+                    focusDigit(index - 1);
+                } else if (e.key === 'ArrowLeft' && index > 0) {
+                    e.preventDefault();
+                    focusDigit(index - 1);
+                } else if (e.key === 'ArrowRight' && index < pinDigits.length - 1) {
+                    e.preventDefault();
+                    focusDigit(index + 1);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    submitPin.click();
+                }
+            });
+
+            digit.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const filled = fillPin((e.clipboardData || window.clipboardData).getData('text'));
+                clearPinError();
+                focusDigit(filled >= pinDigits.length ? pinDigits.length - 1 : filled);
+                if (pinDigits.every(d => d.value)) {
+                    submitPin.click();
+                }
+            });
+        });
+
+        submitPin.addEventListener('click', () => {
+            if (submitPin.disabled) return;
+            syncPin();
+            if (pinInput.value.length < pinDigits.length) {
+                showPinError('Enter all 4 digits.');
+                focusDigit(pinInput.value.length);
+                return false;
+            }
+            if (urlParams.gid == null || urlParams.gid === '') {
+                showPinError('The gid parameter is missing from the link.');
+                return false;
+            }
+            clearPinError();
+            setPinBusy(true);
+            const requestUrl = `/app/files/torrent?gid=${urlParams.gid}&pin=${pinInput.value}&mode=get`;
+            fetch(requestUrl).then(function (response) {
+                if (response.ok) {
+                    return response.json().then(data => {
+                        if (data.error) {
+                            setPinBusy(false);
+                            showPinError(data.message || data.error);
+                            resetPin();
+                        } else {
+                            files = data.files;
+                            allowEdit = data.engine === "qbittorrent";
+                            pinEntry.classList.add('fadeOut');
+                            setTimeout(() => {
+                                pinEntry.style.display = 'none';
+                                fileManager.style.display = 'block';
+                                document.getElementById('actionbar').style.display = 'block';
+                                buildParents(files);
+                                renderCrumbs();
+                                renderFileTree(files);
+                                updateStats();
+                                updateSelectAllButtonText();
+                                updateSelectEverythingButtonText();
+                            }, 500);
+                        }
+                    });
+                } else {
+                    setPinBusy(false);
+                    showPinError(`Something went wrong (status ${response.status}).`);
+                }
+            }).catch(error => {
+                setPinBusy(false);
+                showPinError(`Could not reach the server. ${error.message}`);
+            });
+        });
+
+        if (urlParams.pin) {
+            fillPin(urlParams.pin);
+            if (pinInput.value.length === pinDigits.length) {
+                setTimeout(() => submitPin.click(), 0);
+            } else {
+                focusDigit(pinInput.value.length);
+            }
+        } else {
+            focusDigit(0);
+        }
+
+        const fileSearch = document.getElementById('fileSearch');
+        if (fileSearch) {
+            fileSearch.addEventListener('input', filterFilesBySearch);
+        }
+
+
+        selectAllBtn.addEventListener('click', selectAll);
+        invertSelectionBtn.addEventListener('click', invertSelection);
+        selectEverythingBtn.addEventListener('click', selectEverything);
+
+        submitBtn.addEventListener('click', submitData);
+
+        function updateSelectAllButtonText() {
+            selectAllBtn.style.display = currentFolder ? '' : 'none';
+            const nodes = currentFolder ? currentFolder.children : files;
+            if (nodes.length === 0) {
+                selectAllBtn.textContent = 'This folder';
+                return;
+            }
+            const allSelected = nodes.every(node => node.type === 'folder' ? areAllChildrenSelected(node) : node.selected);
+            selectAllBtn.textContent = allSelected ? 'Clear folder' : 'This folder';
+        }
+
+        function updateSelectEverythingButtonText() {
+            if (files.length === 0) {
+                selectEverythingBtn.textContent = 'All files';
+                return;
+            }
+            const allSelected = files.every(node => node.type === 'folder' ? areAllChildrenSelected(node) : node.selected);
+            selectEverythingBtn.textContent = allSelected ? 'Clear all' : 'All files';
+        }
+    </script>
+</body>
+
+</html>

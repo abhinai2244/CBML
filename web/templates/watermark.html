@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watermark Position Picker</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--tg-theme-bg-color, #1a1a1a);
+            color: var(--tg-theme-text-color, #ffffff);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        h2 {
+            margin-top: 0;
+            text-align: center;
+        }
+        .preview-box {
+            position: relative;
+            width: 280px;
+            height: 180px;
+            background: #2b2b2b;
+            border: 2px dashed #555;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            gap: 10px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .pos-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        .pos-btn:hover, .pos-btn.active {
+            background: var(--tg-theme-button-color, #2481cc);
+            border-color: var(--tg-theme-button-color, #2481cc);
+            font-weight: bold;
+        }
+        .btn-confirm {
+            margin-top: 15px;
+            padding: 12px 30px;
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            max-width: 280px;
+        }
+    </style>
+</head>
+<body>
+    <h2>📍 Select Watermark Position</h2>
+    <p style="font-size: 13px; opacity: 0.8; margin-bottom: 0;">Tap a position to place watermark:</p>
+
+    <div class="preview-box">
+        <button class="pos-btn active" data-pos="Top-Left">Top Left</button>
+        <button class="pos-btn" data-pos="Top-Center">Top Center</button>
+        <button class="pos-btn" data-pos="Top-Right">Top Right</button>
+        <button class="pos-btn" data-pos="Center-Left">Center Left</button>
+        <button class="pos-btn" data-pos="Center">Center</button>
+        <button class="pos-btn" data-pos="Center-Right">Center Right</button>
+        <button class="pos-btn" data-pos="Bottom-Left">Bottom Left</button>
+        <button class="pos-btn" data-pos="Bottom-Center">Bottom Center</button>
+        <button class="pos-btn" data-pos="Bottom-Right">Bottom Right</button>
+    </div>
+
+    <button class="btn-confirm" id="saveBtn">Save Position</button>
+
+    <script>
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.expand();
+        }
+        let selectedPos = "Top-Left";
+
+        document.querySelectorAll('.pos-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.pos-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedPos = btn.getAttribute('data-pos');
+            });
+        });
+
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            if (tg && tg.sendData) {
+                tg.sendData(JSON.stringify({ watermark_position: selectedPos }));
+            } else {
+                alert("Position selected: " + selectedPos + "\n(Please submit in Telegram WebApp)");
+            }
+        });
+    </script>
+</body>
+</html>

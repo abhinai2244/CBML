@@ -1,0 +1,19 @@
+name: trackmerge
+version: "1.1.0"
+author: HTR-X
+description: Merge a video with external audio/subtitle files or download links using an interactive track planner
+license: MIT
+tags: [media, merge, ffmpeg, tracks]
+min_bot_version: "3.1.9"
+entry: trackmerge.py
+commands:
+  - name: merge
+    handler: merge_command
+    description: "Open the audio/subtitle merge planner"
+    usage: "/merge <audio/subtitle links> or reply to a video and send tracks"
+    aliases: [tmerge]
+    access: authorized
+callbacks:
+  - pattern: "^tmerge "
+    handler: trackmerge_callback
+    access: authorized
