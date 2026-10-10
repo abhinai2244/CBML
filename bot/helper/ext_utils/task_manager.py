@@ -345,7 +345,8 @@ async def pre_task_check(message):
     user_dict = user_data.get(user_id, {})
 
     def _format_result():
-        username = message.from_user.mention
+        sender = message.from_user or message.sender_chat
+        username = getattr(sender, "mention", None) or getattr(sender, "title", None) or "Anonymous"
         parts = [f"⌬ <b>Task Checks :</b>\n│\n┟ <b>Name</b> → {username}\n┃\n"]
         for i, m_part in enumerate(msg, 1):
             parts.append(m_part)
